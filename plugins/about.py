@@ -4,6 +4,7 @@ from bot.config import Config
 from bot.helpers.utils import get_bot_age
 from datetime import datetime, timedelta
 from bot.plugins.start import delete_message
+from bot.database.db import db
 
 @Client.on_message(filters.command(["about", "info"]) & filters.private)
 async def about_command(client, message: Message):
@@ -24,7 +25,16 @@ async def about_command(client, message: Message):
         [InlineKeyboardButton("World Fastest Bots", url="https://t.me/World_Fastest_Bots")]
     ])
     
-    msg = await message.reply_text(text, reply_markup=buttons, quote=True, disable_web_page_preview=True)
+    forward_protect = await db.get_setting("forward_protect", "False")
+    protect_content = (forward_protect == "True")
+    
+    msg = await message.reply_text(
+        text, 
+        reply_markup=buttons, 
+        quote=True, 
+        disable_web_page_preview=True,
+        protect_content=protect_content
+    )
     
     run_date = datetime.now() + timedelta(seconds=Config.ABOUT_MSG_DELETE_TIME)
     client.scheduler.add_job(delete_message, "date", run_date=run_date, args=[client, message.chat.id, msg.id])
