@@ -1,0 +1,7 @@
+pyrogram
+tgcrypto
+asyncpg
+apscheduler
+python-dotenv
+pytz
+psutil
