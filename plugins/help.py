@@ -3,6 +3,7 @@ from pyrogram.types import Message
 from bot.config import Config
 from datetime import datetime, timedelta
 from bot.plugins.start import delete_message
+from bot.database.db import db
 
 @Client.on_message(filters.command("help") & filters.private)
 async def help_command(client, message: Message):
@@ -19,7 +20,10 @@ async def help_command(client, message: Message):
         "</blockquote>"
     )
     
-    msg = await message.reply_text(text, quote=True)
+    forward_protect = await db.get_setting("forward_protect", "False")
+    protect_content = (forward_protect == "True")
+    
+    msg = await message.reply_text(text, quote=True, protect_content=protect_content)
     
     run_date = datetime.now() + timedelta(seconds=Config.HELP_MSG_DELETE_TIME)
     client.scheduler.add_job(delete_message, "date", run_date=run_date, args=[client, message.chat.id, msg.id])
