@@ -1,10 +1,9 @@
-import logging
-import os
 from pyrogram import Client, idle
 from bot.config import Config
 from bot.database.db import db
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import logging
 
 # Setup Logging
 logging.basicConfig(
@@ -28,6 +27,12 @@ class Bot(Client):
     async def start(self):
         await db.connect()
         self.scheduler.start()
+        
+        # Schedule periodic tasks
+        # Check temp broadcasts every minute
+        from bot.plugins.broadcast import check_temp_broadcasts
+        self.scheduler.add_job(check_temp_broadcasts, "interval", minutes=1, args=[self])
+        
         await super().start()
         logging.info("Bot Started!")
 
