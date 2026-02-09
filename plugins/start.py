@@ -18,8 +18,6 @@ async def start_command(client, message: Message):
     
     # Check if it's a token link (e.g. /start token)
     if len(message.command) > 1:
-        # Handle link logic here (implemented in links.py mostly, but triggered here)
-        # We will dispatch this to a link handler function
         from bot.plugins.links import handle_start_link
         await handle_start_link(client, message)
         return
@@ -37,8 +35,12 @@ async def start_command(client, message: Message):
         "Shukriya! ❤️"
     )
     
-    msg = await message.reply_text(text, quote=True)
+    forward_protect = await db.get_setting("forward_protect", "False")
+    protect_content = (forward_protect == "True")
+    
+    msg = await message.reply_text(text, quote=True, protect_content=protect_content)
     
     # Schedule deletion
     run_date = datetime.now() + timedelta(seconds=Config.START_MSG_DELETE_TIME)
     client.scheduler.add_job(delete_message, "date", run_date=run_date, args=[client, message.chat.id, msg.id])
+
